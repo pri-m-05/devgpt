@@ -1,8 +1,8 @@
-// src/main.jsx (for Vite) or src/index.jsx (for CRA)
+// devgpt/frontend/src/main.jsx
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import "./index.css";
+import "./index.css"; // Import Tailwind-generated CSS
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>

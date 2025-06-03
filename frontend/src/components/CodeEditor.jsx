@@ -1,20 +1,26 @@
-// src/components/CodeEditor.jsx
 import React from "react";
 
-export default function CodeEditor({ value, onChange }) {
+/**
+ * A purely presentational “code editor” window.
+ * In this example, it’s just a <textarea> styled like a code editor.
+ * (You could swap it out for Monaco or CodeMirror if you like.)
+ */
+export default function CodeEditor() {
   return (
-    <textarea
-      value={value}
-      onChange={onChange}
-      placeholder="Type your question or paste code here..."
-      className="
-        w-full h-full p-4
-        bg-gray-100 dark:bg-gray-800
-        text-gray-900 dark:text-gray-100
-        font-mono text-sm
-        focus:outline-none resize-none
-      "
-      style={{ lineHeight: "1.5rem" }}
-    />
+    <div className="h-full">
+      <textarea
+        className="
+          w-full h-full
+          bg-white dark:bg-gray-900
+          text-black dark:text-white
+          font-mono text-sm
+          p-2
+          rounded-lg
+          focus:outline-none
+          border border-gray-300 dark:border-gray-600
+        "
+        placeholder="// Write your code here…"
+      />
+    </div>
   );
 }

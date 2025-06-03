@@ -9,7 +9,7 @@
   --bg-gradient-light: used for light mode
 */
 :root {
-  --bg-gradient: linear-gradient(to bottom right, theme("colors.purple-start"), theme("colors.blue-mid"), theme("colors.pink-end"));
+  --bg-gradient: linear-gradient(to bottom right, theme("colors.purple-start.50"), theme("colors.blue-mid.50"), theme("colors.pink-end.50"));
   --bg-gradient-light: linear-gradient(to bottom right, #F0E7FE, #E0EFFF, #FFE7F3);
 }
 
