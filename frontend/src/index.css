@@ -1,0 +1,41 @@
+/* src/index.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 
+  Define two CSS variables for our gradients so we can toggle easily:
+  --bg-gradient: used in the main container for dark mode
+  --bg-gradient-light: used for light mode
+*/
+:root {
+  --bg-gradient: linear-gradient(to bottom right, theme("colors.purple-start"), theme("colors.blue-mid"), theme("colors.pink-end"));
+  --bg-gradient-light: linear-gradient(to bottom right, #F0E7FE, #E0EFFF, #FFE7F3);
+}
+
+/* 
+  When .dark is on <html>, use `--bg-gradient` (pink-purple-blue dark theme).
+  Otherwise (light mode), use `--bg-gradient-light`.
+*/
+body {
+  background: var(--bg-gradient-light);
+}
+
+.dark body {
+  background: var(--bg-gradient);
+}
+
+/* 
+  Make scrollbars thin and match theme (optional).
+  Adjust these if you like a different style.
+*/
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.4);
+  border-radius: 4px;
+}
+.dark::-webkit-scrollbar-thumb {
+  background-color: rgba(200, 200, 200, 0.4);
+}
