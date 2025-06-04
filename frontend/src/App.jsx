@@ -1,124 +1,278 @@
+// frontend/src/App.jsx
+
 import React, { useState } from "react";
-import CodeEditor from "./components/CodeEditor";
-import Sidebar from "./components/Sidebar";
 
-export default function App() {
-  // We keep state for repository path, question text, and the LLM response:
-  const [repoPath, setRepoPath] = useState("");
+function App() {
+  // Theme state: true = dark mode, false = light mode
+  const [darkMode, setDarkMode] = useState(true);
+
+  // Path input state
+  const [path, setPath] = useState("");
+
+  // Embedding state
+  const [numChunks, setNumChunks] = useState(null);
+  const [loadingEmbed, setLoadingEmbed] = useState(false);
+  const [embedError, setEmbedError] = useState(null);
+
+  // Question/Answer state
   const [question, setQuestion] = useState("");
-  const [response, setResponse] = useState("No response yet.");
-  const [chunksInitialized, setChunksInitialized] = useState(false);
+  const [answer, setAnswer] = useState("");
+  const [asking, setAsking] = useState(false);
+  const [questionError, setQuestionError] = useState(null);
 
-  // 1) Initialize: send POST to /api/initialize with { code_path: repoPath }
-  const handleInitialize = async () => {
-    try {
-      const initRes = await fetch("http://127.0.0.1:5000/api/initialize", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code_path: repoPath })
-      });
-      if (!initRes.ok) {
-        const text = await initRes.text();
-        setResponse(`Initialization failed:\n${text}`);
-        return;
-      }
-      const initJson = await initRes.json();
-      setResponse(`Initialization complete:\n${initJson.num_chunks} chunks embedded.`);
-      setChunksInitialized(true);
-    } catch (err) {
-      setResponse(`Error talking to server:\n${err.message}`);
-    }
-  };
+  // Toggle between dark mode and light mode
+  function toggleTheme() {
+    setDarkMode(prev => !prev);
+  }
 
-  // 2) Ask: send POST to /api/ask with { question } once initialization done
-  const handleAsk = async () => {
-    if (!chunksInitialized) {
-      setResponse("⚠️ Please initialize first (Embed chunks).");
+  // Called when the user clicks “Load Path” to chunk & embed
+  async function handleLoadEmbed() {
+    if (!path.trim()) {
+      setEmbedError("Please enter a valid directory path.");
       return;
     }
+
+    setEmbedError(null);
+    setLoadingEmbed(true);
+    setNumChunks(null);
+    setAnswer(""); // Clear previous answer
     try {
-      const askRes = await fetch("http://127.0.0.1:5000/api/ask", {
+      const resp = await fetch("/api/load_and_embed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ question })
+        body: JSON.stringify({ directory: path.trim() }),
       });
-      if (!askRes.ok) {
-        const text = await askRes.text();
-        setResponse(`Ask failed:\n${text}`);
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        setEmbedError(err.error || "Unknown error");
+        setLoadingEmbed(false);
         return;
       }
-      const askJson = await askRes.json();
-      setResponse(askJson.answer);
-    } catch (err) {
-      setResponse(`Error talking to server:\n${err.message}`);
+
+      const body = await resp.json(); // { status: "ok", num_chunks: <number> }
+      setNumChunks(body.num_chunks);
+    } catch (e) {
+      setEmbedError(e.message || "Network error");
+    } finally {
+      setLoadingEmbed(false);
     }
+  }
+
+  // Called when the user submits the question form
+  async function handleAskQuestion(event) {
+    event.preventDefault();
+    if (!question.trim()) {
+      setQuestionError("Please enter a question.");
+      return;
+    }
+    setQuestionError(null);
+    setAsking(true);
+    setAnswer("");
+    try {
+      const resp = await fetch("/api/question", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: question.trim() }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json();
+        setQuestionError(err.error || "Unknown error");
+        setAsking(false);
+        return;
+      }
+
+      const body = await resp.json(); // { answer: "<LLM response>" }
+      setAnswer(body.answer);
+    } catch (e) {
+      setQuestionError(e.message || "Network error");
+    } finally {
+      setAsking(false);
+    }
+  }
+
+  // Theme-dependent gradients
+  const darkGradient = "linear-gradient(to bottom right, #7e57c2, #42a5f5, #ec407a)";
+  const lightGradient = "linear-gradient(to bottom right, #f3e5f5, #e3f2fd, #fce4ec)";
+
+  // Code window styling (monospace, tinted background)
+  const codeWindowStyle = {
+    backgroundColor: darkMode ? "#1e1e1e" : "#fafafa",
+    color: darkMode ? "#e0e0e0" : "#1e1e1e",
+    fontFamily: "Consolas, 'Courier New', monospace",
+    fontSize: "14px",
+    padding: "1rem",
+    borderRadius: "4px",
+    height: "300px",
+    overflowY: "auto",
+    whiteSpace: "pre-wrap",
+    flex: 1,
+    boxShadow: darkMode
+      ? "0 0 10px rgba(0, 0, 0, 0.5)"
+      : "0 0 10px rgba(200, 200, 200, 0.5)"
+  };
+
+  // Sidebar styling
+  const sidebarStyle = {
+    backgroundColor: darkMode ? "#2d2d2d" : "#ffffff",
+    color: darkMode ? "#f0f0f0" : "#333333",
+    fontFamily: "Arial, sans-serif",
+    fontSize: "14px",
+    padding: "1rem",
+    borderRadius: "4px",
+    width: "30%",
+    marginLeft: "1rem",
+    boxShadow: darkMode
+      ? "0 0 10px rgba(0, 0, 0, 0.5)"
+      : "0 0 10px rgba(200, 200, 200, 0.5)",
+    overflowY: "auto",
+    height: "300px"
   };
 
   return (
-    <div className="h-screen flex flex-col">
-      {/* Top bar: inputs + buttons */}
-      <div className="flex items-center p-2 space-x-2 border-b border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-800">
-        <input
-          type="text"
-          placeholder="Repo path (e.g. ./core)"
-          value={repoPath}
-          onChange={(e) => setRepoPath(e.target.value)}
-          className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500"
-        />
+    <div
+      style={{
+        minHeight: "100vh",
+        background: darkMode ? darkGradient : lightGradient,
+        color: darkMode ? "#ffffff" : "#000000",
+        transition: "background 0.3s, color 0.3s",
+        padding: "1rem",
+        boxSizing: "border-box"
+      }}
+    >
+      {/* Header */}
+      <header style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
+        <h1 style={{ flex: 1, margin: 0 }}>DevGPT</h1>
         <button
-          onClick={handleInitialize}
-          className="px-4 py-1 bg-purple-start text-white rounded-md hover:bg-purple-end transition"
-        >
-          Embed Chunks
-        </button>
-        <input
-          type="text"
-          placeholder="Your question…"
-          value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          className="flex-1 px-2 py-1 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500"
-        />
-        <button
-          onClick={handleAsk}
-          className="px-4 py-1 bg-blue-accent text-white rounded-md hover:bg-pink-accent transition"
-        >
-          Ask
-        </button>
-        {/* Theme toggle */}
-        <button
-          onClick={() => {
-            document.documentElement.classList.toggle("dark");
-          }}
-          className="px-3 py-1 bg-pink-accent text-white rounded-md hover:bg-purple-end transition"
-        >
-          Toggle Theme
-        </button>
-      </div>
-
-      {/* Main content: left = code editor; right = response sidebar */}
-      <div className="flex flex-1">
-        {/* Code Editor Pane */}
-        <div
-          className="w-2/3 p-4"
+          onClick={toggleTheme}
           style={{
-            /* 
-               Use our CSS variable for background.
-               In dark mode (<html class="dark">), --bg-gradient is the purple→blue gradient.
-               In light mode, --bg-gradient-light is a pastel gradient.
-            */
-            backgroundImage: document.documentElement.classList.contains("dark")
-              ? "var(--bg-gradient)"
-              : "var(--bg-gradient-light)"
+            padding: "0.5rem 1rem",
+            borderRadius: "4px",
+            border: "none",
+            cursor: "pointer",
+            backgroundColor: darkMode ? "#ec407a" : "#7e57c2",
+            color: "#ffffff",
+            fontWeight: "bold"
           }}
         >
-          <CodeEditor />
+          {darkMode ? "Light Mode" : "Dark Mode"}
+        </button>
+      </header>
+
+      {/* Path Input & Load Button */}
+      <section style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
+        <label htmlFor="pathInput" style={{ marginRight: "0.5rem", fontWeight: "bold" }}>
+          Repository Path:
+        </label>
+        <input
+          id="pathInput"
+          type="text"
+          value={path}
+          onChange={e => setPath(e.target.value)}
+          placeholder="e.g. frontend/src"
+          style={{
+            flex: 1,
+            padding: "0.5rem",
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            fontFamily: "inherit",
+            marginRight: "0.5rem"
+          }}
+        />
+        <button
+          onClick={handleLoadEmbed}
+          disabled={loadingEmbed}
+          style={{
+            padding: "0.5rem 1rem",
+            borderRadius: "4px",
+            border: "none",
+            cursor: "pointer",
+            backgroundColor: darkMode ? "#42a5f5" : "#ec407a",
+            color: "#ffffff",
+            fontWeight: "bold"
+          }}
+        >
+          {loadingEmbed ? "Loading…" : "Load Path"}
+        </button>
+      </section>
+      {embedError && <p style={{ color: "#ff6666", marginBottom: "1rem" }}>{embedError}</p>}
+      {numChunks !== null && !loadingEmbed && (
+        <p style={{ marginBottom: "1rem" }}>
+          ✅ Embedded <strong>{numChunks}</strong> code chunks.
+        </p>
+      )}
+
+      {/* Question Input & Ask Button */}
+      <section style={{ marginBottom: "1rem" }}>
+        <form onSubmit={handleAskQuestion}>
+          <label htmlFor="qInput" style={{ fontWeight: "bold" }}>
+            Ask your codebase:
+          </label>
+          <br />
+          <textarea
+            id="qInput"
+            rows={3}
+            cols={80}
+            value={question}
+            onChange={e => setQuestion(e.target.value)}
+            placeholder="e.g. How does the login flow work?"
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontFamily: "inherit",
+              marginTop: "0.5rem",
+              boxSizing: "border-box"
+            }}
+          />
+          <br />
+          <button
+            type="submit"
+            disabled={asking || loadingEmbed}
+            style={{
+              marginTop: "0.5rem",
+              padding: "0.5rem 1rem",
+              borderRadius: "4px",
+              border: "none",
+              cursor: "pointer",
+              backgroundColor: darkMode ? "#ec407a" : "#7e57c2",
+              color: "#ffffff",
+              fontWeight: "bold"
+            }}
+          >
+            {asking ? "Thinking…" : "Ask DevGPT"}
+          </button>
+        </form>
+        {questionError && (
+          <p style={{ color: "#ff6666", marginTop: "0.5rem" }}>{questionError}</p>
+        )}
+      </section>
+
+      {/* Two-Column Layout: Left = Code Window; Right = Sidebar */}
+      <section style={{ display: "flex", gap: "1rem" }}>
+        {/* Left: “Code Editor” Window (answer shown here) */}
+        <div style={codeWindowStyle}>
+          {answer
+            ? answer
+            : "// The answer from DevGPT will appear here in code-editor style\n"}
         </div>
 
-        {/* Sidebar Pane */}
-        <div className="w-1/3 p-4 bg-white dark:bg-gray-700 border-l border-gray-300 dark:border-gray-600 overflow-auto">
-          <Sidebar responseText={response} />
+        {/* Right: Sidebar (plain text) */}
+        <div style={sidebarStyle}>
+          <h3>Response</h3>
+          {answer ? (
+            <p>{answer}</p>
+          ) : (
+            <p style={{ fontStyle: "italic", color: darkMode ? "#aaa" : "#666" }}>
+              The DevGPT response will appear here.
+            </p>
+          )}
         </div>
-      </div>
+      </section>
     </div>
   );
 }
+
+export default App;

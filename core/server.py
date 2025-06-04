@@ -1,8 +1,9 @@
 # server.py
+
 import os
 from flask import Flask, request, jsonify
 
-# Import the existing modules you already have:
+# Import your existing modules (make sure these are in the same folder as server.py):
 from chunker import chunk_files_in_directory
 from embedder import embed_chunks, embed_text
 from retriever import retrieve
@@ -10,15 +11,14 @@ from explainer import explain
 
 app = Flask(__name__)
 
-# In-memory cache for embedded chunks (so we don't re-run embeddings on every question)
+# In‐memory cache to hold embedded chunks between requests
 _cached_embedded_chunks = None
 
 @app.route('/api/load_and_embed', methods=['POST'])
 def load_and_embed():
     """
-    Expects JSON: { "directory": "<relative-path-to-your-codebase>" }
-    Returns JSON: { "status": "ok", "num_chunks": <int> } on success,
-                 or     { "error": "<message>" } with a 4xx/5xx status code.
+    Expects JSON body: { "directory": "<relative-path-to-codebase-folder>" }
+    Returns: { "status": "ok", "num_chunks": <int> } or an {"error": "..."} JSON.
     """
     global _cached_embedded_chunks
 
@@ -28,13 +28,13 @@ def load_and_embed():
 
     directory = data['directory']
     try:
-        # 1) Chunk all source files under the given directory
+        # 1) Chunk all source files under that directory
         chunks = chunk_files_in_directory(directory)
 
-        # 2) Embed all those chunks (this may take some time on first run)
+        # 2) Embed all chunks
         embedded = embed_chunks(chunks)
 
-        # 3) Cache for future question calls
+        # 3) Cache the result for question‐time
         _cached_embedded_chunks = embedded
 
         return jsonify({
@@ -48,12 +48,13 @@ def load_and_embed():
         return jsonify({"error": str(e)}), 500
 
 
+
 @app.route('/api/question', methods=['POST'])
 def answer_question():
     """
-    Expects JSON: { "question": "<plain-text question>" }
-    Requires that /api/load_and_embed was already called successfully.
-    Returns JSON: { "answer": "<LLM-generated explanation>" }
+    Expects JSON body: { "question": "<plain-text question>" }
+    Must be called after /api/load_and_embed; otherwise returns an error.
+    Returns: { "answer": "<LLM‐generated explanation>" } or an {"error": "..."} JSON.
     """
     global _cached_embedded_chunks
 
@@ -69,10 +70,10 @@ def answer_question():
         # 1) Embed the question text
         q_vec = embed_text(question)
 
-        # 2) Retrieve the top 5 most‐relevant chunks
+        # 2) Retrieve top‐5 most relevant chunks
         top_chunks = retrieve(q_vec, _cached_embedded_chunks, top_k=5)
 
-        # 3) Get an explanation from the LLM using those top chunks + question
+        # 3) Ask the LLM to explain using those top chunks + question
         answer_text = explain(top_chunks, question)
 
         return jsonify({"answer": answer_text}), 200
@@ -81,5 +82,5 @@ def answer_question():
 
 
 if __name__ == '__main__':
-    # By default, Flask listens on port 5000
+    # Listen on port 5000, accessible from localhost
     app.run(host='0.0.0.0', port=5000, debug=True)
