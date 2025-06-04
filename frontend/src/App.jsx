@@ -37,7 +37,7 @@ function App() {
     setNumChunks(null);
     setAnswer(""); // Clear previous answer
     try {
-      const resp = await fetch("/api/load_and_embed", {
+        const resp = await fetch("http://localhost:5000/api/load_and_embed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ directory: path.trim() }),
@@ -70,7 +70,7 @@ function App() {
     setAsking(true);
     setAnswer("");
     try {
-      const resp = await fetch("/api/question", {
+        const resp = await fetch("http://localhost:5000/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: question.trim() }),
