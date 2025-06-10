@@ -25,7 +25,7 @@ function App() {
     setDarkMode(prev => !prev);
   }
 
-  // Called when the user clicks “Load Path” to chunk & embed
+  // Called when the user clicks "Load Path" to chunk & embed
   async function handleLoadEmbed() {
     if (!path.trim()) {
       setEmbedError("Please enter a valid directory path.");
@@ -37,7 +37,7 @@ function App() {
     setNumChunks(null);
     setAnswer(""); // Clear previous answer
     try {
-        const resp = await fetch("http://localhost:5000/api/load_and_embed", {
+      const resp = await fetch("/api/load_and_embed", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ directory: path.trim() }),
@@ -70,7 +70,7 @@ function App() {
     setAsking(true);
     setAnswer("");
     try {
-        const resp = await fetch("http://localhost:5000/api/question", {
+      const resp = await fetch("/api/question", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ question: question.trim() }),
@@ -252,7 +252,7 @@ function App() {
 
       {/* Two-Column Layout: Left = Code Window; Right = Sidebar */}
       <section style={{ display: "flex", gap: "1rem" }}>
-        {/* Left: “Code Editor” Window (answer shown here) */}
+        {/* Left: "Code Editor" Window (answer shown here) */}
         <div style={codeWindowStyle}>
           {answer
             ? answer

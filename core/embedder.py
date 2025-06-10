@@ -2,7 +2,7 @@
 embedder.py
 
 Turn text (code chunks or a question) into embedding vectors
-using OpenAI’s embeddings API.
+using OpenAI's embeddings API.
 """
 
 import os
@@ -12,18 +12,18 @@ from dotenv import load_dotenv
 # 1. Load environment variables
 load_dotenv()
 
-# 2. Set your OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# 2. Set your OpenAI API key (new API uses client)
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def embed_text(text: str) -> list[float]:
     """
-    - Call openai.Embedding.create with:
+    - Call client.embeddings.create with:
         • model="text-embedding-3-small"
         • input=text
     - Extract the vector from the response
     - Return the vector as a list of floats
     """
-    response = openai.Embedding.create(
+    response = client.embeddings.create(
         model="text-embedding-3-small",
         input=text
     )

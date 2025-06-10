@@ -11,13 +11,13 @@ from dotenv import load_dotenv
 
 # 1. Load .env and set API key
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def explain(chunks: list[dict], question: str) -> str:
     """
     - Build system & user messages, each as a {"role": "...", "content": "..."} dict.
-    - Call openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=[...]).
-    - Return the assistant’s reply (string).
+    - Call client.chat.completions.create(model="gpt-3.5-turbo", messages=[...]).
+    - Return the assistant's reply (string).
     """
     # 1) Combine the top chunks into a single string
     snippet_text = ""
@@ -38,11 +38,11 @@ def explain(chunks: list[dict], question: str) -> str:
     }
 
     # 4) Call the ChatCompletion endpoint with a list of dict messages
-    resp = openai.ChatCompletion.create(
+    resp = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[system_msg, user_msg],
         temperature=0.0
     )
 
-    # 5) Extract and return the assistant’s reply text
-    return resp["choices"][0]["message"]["content"].strip()
+    # 5) Extract and return the assistant's reply text
+    return resp.choices[0].message.content.strip()
