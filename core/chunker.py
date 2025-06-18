@@ -1,7 +1,7 @@
 """
 chunker.py
 
-Split every source file into manageable “chunks” so that each piece
+Split every source file into manageable "chunks" so that each piece
 is small enough for embedding & LLM context windows.
 """
 
@@ -19,13 +19,13 @@ def list_source_files(directory, extensions=('.py', '.js', '.java')):
 
 def read_file(path):
     """
-    Open & read a file’s contents in UTF-8.
+    Open & read a file's contents in UTF-8.
     Returns a single string.
     """
     with open(path, 'r', encoding='utf-8', errors='ignore') as f:
         return f.read()
 
-def chunk_source_code(code_str, max_lines=50):
+def chunk_source_code(code_str, max_lines=20):
     """
     1. Split the code into lines.
     2. Group lines into blocks of ≤ max_lines.
@@ -46,7 +46,7 @@ def chunk_files_in_directory(directory):
     2. Return a list of dicts:
        {
          'path': full file path,
-         'chunk_id': unique identifier (e.g. “file.py_part2”),
+         'chunk_id': unique identifier (e.g. "file.py_part2"),
          'text': chunk string
        }
     """
