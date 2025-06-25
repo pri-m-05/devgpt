@@ -21,8 +21,10 @@ def explain(chunks: list[dict], question: str) -> str:
     - Return the assistant's reply (string).
     """
     enc = tiktoken.encoding_for_model("gpt-3.5-turbo")
-    max_total_tokens = 7000  # leave room for answer
-    max_chunk_tokens = 500
+    MODEL_LIMIT = 8192  # Adjust if using a different model
+    RESERVED_FOR_ANSWER = 1000  # tokens to leave for the model's reply
+    MAX_PROMPT_TOKENS = MODEL_LIMIT - RESERVED_FOR_ANSWER
+    MAX_CHUNK_TOKENS = 500
 
     # Build code context
     snippet_text = ""
@@ -30,11 +32,11 @@ def explain(chunks: list[dict], question: str) -> str:
     for chunk in chunks:
         chunk_text = f"File: {chunk['path']}\n{chunk['text']}\n\n"
         chunk_token_ids = enc.encode(chunk_text)
-        if len(chunk_token_ids) > max_chunk_tokens:
-            chunk_token_ids = chunk_token_ids[:max_chunk_tokens]
+        if len(chunk_token_ids) > MAX_CHUNK_TOKENS:
+            chunk_token_ids = chunk_token_ids[:MAX_CHUNK_TOKENS]
             chunk_text = enc.decode(chunk_token_ids) + "\n...[chunk truncated]..."
         chunk_tokens = len(enc.encode(chunk_text))
-        if total_tokens + chunk_tokens > max_total_tokens:
+        if total_tokens + chunk_tokens > MAX_PROMPT_TOKENS:
             break
         snippet_text += chunk_text
         total_tokens += chunk_tokens
@@ -49,14 +51,19 @@ def explain(chunks: list[dict], question: str) -> str:
         "content": f"{snippet_text}\nQuestion: {question}"
     }
 
-    # Final strict token check: truncate user message if needed
+    # Final strict token check: truncate user message by tokens if needed
     def count_tokens(messages):
         return sum(len(enc.encode(m["content"])) for m in messages)
 
     messages = [system_msg, user_msg]
-    while count_tokens(messages) > 3000:
-        # Truncate user message content by 10% each time
-        user_msg["content"] = user_msg["content"][:int(len(user_msg["content"]) * 0.9)] + "\n...[prompt truncated]..."
+    while count_tokens(messages) > MAX_PROMPT_TOKENS:
+        user_tokens = enc.encode(user_msg["content"])
+        # Truncate by 10% each time, but always leave at least 100 tokens
+        if len(user_tokens) <= 100:
+            user_tokens = user_tokens[:100]
+        else:
+            user_tokens = user_tokens[:int(len(user_tokens) * 0.9)]
+        user_msg["content"] = enc.decode(user_tokens) + "\n...[prompt truncated]..."
         messages = [system_msg, user_msg]
 
     # Now safe to send

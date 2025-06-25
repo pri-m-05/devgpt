@@ -8,6 +8,7 @@ using OpenAI's embeddings API.
 import os
 import openai
 from dotenv import load_dotenv
+import tiktoken
 
 # 1. Load environment variables
 load_dotenv()
@@ -39,6 +40,12 @@ def embed_chunks(chunks: list[dict]) -> list[dict]:
       3. Add the resulting vector under chunk['embedding']
       4. Return the list of updated chunk dicts
     """
+    enc = tiktoken.encoding_for_model("text-embedding-3-small")
+    MAX_EMBED_TOKENS = 7900  # Model's context window
     for chunk in chunks:
+        tokens = enc.encode(chunk['text'])
+        if len(tokens) > MAX_EMBED_TOKENS:
+            tokens = tokens[:MAX_EMBED_TOKENS]
+            chunk['text'] = enc.decode(tokens) + "\n...[chunk truncated for embedding]..."
         chunk['embedding'] = embed_text(chunk['text'])
     return chunks
