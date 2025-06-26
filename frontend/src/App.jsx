@@ -113,23 +113,6 @@ function App() {
       : "0 0 10px rgba(200, 200, 200, 0.5)"
   };
 
-  // Sidebar styling
-  const sidebarStyle = {
-    backgroundColor: darkMode ? "#2d2d2d" : "#ffffff",
-    color: darkMode ? "#f0f0f0" : "#333333",
-    fontFamily: "Arial, sans-serif",
-    fontSize: "14px",
-    padding: "1rem",
-    borderRadius: "4px",
-    width: "30%",
-    marginLeft: "1rem",
-    boxShadow: darkMode
-      ? "0 0 10px rgba(0, 0, 0, 0.5)"
-      : "0 0 10px rgba(200, 200, 200, 0.5)",
-    overflowY: "auto",
-    height: "300px"
-  };
-
   return (
     <div
       style={{
@@ -138,137 +121,151 @@ function App() {
         color: darkMode ? "#ffffff" : "#000000",
         transition: "background 0.3s, color 0.3s",
         padding: "1rem",
-        boxSizing: "border-box"
+        boxSizing: "border-box",
+        position: "relative"
       }}
     >
-      {/* Header */}
-      <header style={{ display: "flex", alignItems: "center", marginBottom: "1rem" }}>
-        <h1 style={{ flex: 1, margin: 0 }}>DevGPT</h1>
-        <button
-          onClick={toggleTheme}
+      {/* Centered, Times New Roman bold DevGPT logo (larger) */}
+      <div style={{ textAlign: "center", marginBottom: "2.5rem" }}>
+        <h1
           style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "4px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: darkMode ? "#ec407a" : "#7e57c2",
-            color: "#ffffff",
-            fontWeight: "bold"
+            fontSize: "4.5rem",
+            fontWeight: 700,
+            color: darkMode ? "#ec407a" : "#7e57c2",
+            fontFamily: "'Times New Roman', Times, serif",
+            margin: 0,
+            textShadow: darkMode
+              ? "0 2px 16px #000, 0 1px 0 #fff"
+              : "0 2px 16px #ccc, 0 1px 0 #fff",
+            letterSpacing: "0.04em",
+            lineHeight: 1.1
           }}
         >
-          {darkMode ? "Light Mode" : "Dark Mode"}
-        </button>
-      </header>
-
-      {/* Path Input & Load Button */}
-      <section style={{ marginBottom: "1rem", display: "flex", alignItems: "center" }}>
-        <label htmlFor="pathInput" style={{ marginRight: "0.5rem", fontWeight: "bold" }}>
-          Repository Path:
-        </label>
-        <input
-          id="pathInput"
-          type="text"
-          value={path}
-          onChange={e => setPath(e.target.value)}
-          placeholder="e.g. frontend/src"
-          style={{
-            flex: 1,
-            padding: "0.5rem",
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-            fontFamily: "inherit",
-            marginRight: "0.5rem"
-          }}
-        />
-        <button
-          onClick={handleLoadEmbed}
-          disabled={loadingEmbed}
-          style={{
-            padding: "0.5rem 1rem",
-            borderRadius: "4px",
-            border: "none",
-            cursor: "pointer",
-            backgroundColor: darkMode ? "#42a5f5" : "#ec407a",
-            color: "#ffffff",
-            fontWeight: "bold"
-          }}
-        >
-          {loadingEmbed ? "Loading…" : "Load Path"}
-        </button>
+          DevGPT
+        </h1>
+      </div>
+      {/* Dark mode button in top right */}
+      <button
+        onClick={toggleTheme}
+        style={{
+          position: "absolute",
+          top: 24,
+          right: 32,
+          padding: "0.5rem 1.5rem",
+          borderRadius: "4px",
+          border: "none",
+          cursor: "pointer",
+          backgroundColor: darkMode ? "#ec407a" : "#7e57c2",
+          color: "#ffffff",
+          fontWeight: "bold",
+          fontSize: "1rem",
+          zIndex: 10
+        }}
+      >
+        {darkMode ? "Light Mode" : "Dark Mode"}
+      </button>
+      {/* Path input and load button, centered and even wider */}
+      <section style={{ marginBottom: "2rem", display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", width: "80%", minWidth: 500, maxWidth: 1200 }}>
+          <label htmlFor="pathInput" style={{ fontWeight: "bold", marginRight: "0.5rem", whiteSpace: "nowrap" }}>
+            Repository Path:
+          </label>
+          <input
+            id="pathInput"
+            type="text"
+            value={path}
+            onChange={e => setPath(e.target.value)}
+            placeholder="e.g. frontend/src"
+            style={{
+              flex: 1,
+              padding: "0.5rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+              fontFamily: "inherit"
+            }}
+          />
+          <button
+            onClick={handleLoadEmbed}
+            disabled={loadingEmbed}
+            style={{
+              marginLeft: "0.5rem",
+              padding: "0.5rem 1rem",
+              borderRadius: "4px",
+              border: "none",
+              cursor: "pointer",
+              backgroundColor: darkMode ? "#42a5f5" : "#8d2eff",
+              color: "#fff",
+              fontWeight: "bold",
+              whiteSpace: "nowrap"
+            }}
+          >
+            {loadingEmbed ? "Loading..." : "Load Path"}
+          </button>
+        </div>
       </section>
-      {embedError && <p style={{ color: "#ff6666", marginBottom: "1rem" }}>{embedError}</p>}
-      {numChunks !== null && !loadingEmbed && (
-        <p style={{ marginBottom: "1rem" }}>
-          ✅ Embedded <strong>{numChunks}</strong> code chunks.
-        </p>
+      {embedError && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <p style={{ color: "#ff6666", marginTop: "-1rem", marginBottom: "1rem", width: "80%", maxWidth: 1200 }}>{embedError}</p>
+        </div>
       )}
-
-      {/* Question Input & Ask Button */}
-      <section style={{ marginBottom: "1rem" }}>
-        <form onSubmit={handleAskQuestion}>
-          <label htmlFor="qInput" style={{ fontWeight: "bold" }}>
+      {numChunks !== null && !embedError && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <p style={{ color: darkMode ? "#90caf9" : "#512da8", marginTop: "-1rem", marginBottom: "1rem", width: "80%", maxWidth: 1200 }}>
+            Embedded {numChunks} code chunks.
+          </p>
+        </div>
+      )}
+      {/* Question Input & Ask Button, centered and even wider */}
+      <section style={{ marginBottom: "2rem", display: "flex", justifyContent: "center", alignItems: "center", width: "100%" }}>
+        <form onSubmit={handleAskQuestion} style={{ display: "flex", alignItems: "center", width: "80%", minWidth: 500, maxWidth: 1200 }}>
+          <label htmlFor="qInput" style={{ fontWeight: "bold", marginRight: "0.5rem", whiteSpace: "nowrap" }}>
             Ask your codebase:
           </label>
-          <br />
           <textarea
             id="qInput"
             rows={3}
-            cols={80}
             value={question}
             onChange={e => setQuestion(e.target.value)}
             placeholder="e.g. How does the login flow work?"
             style={{
-              width: "100%",
+              flex: 1,
               padding: "0.5rem",
               borderRadius: "4px",
               border: "1px solid #ccc",
               fontFamily: "inherit",
-              marginTop: "0.5rem",
-              boxSizing: "border-box"
+              marginRight: "0.5rem",
+              resize: "vertical"
             }}
           />
-          <br />
           <button
             type="submit"
             disabled={asking || loadingEmbed}
             style={{
-              marginTop: "0.5rem",
               padding: "0.5rem 1rem",
               borderRadius: "4px",
               border: "none",
               cursor: "pointer",
               backgroundColor: darkMode ? "#ec407a" : "#7e57c2",
               color: "#ffffff",
-              fontWeight: "bold"
+              fontWeight: "bold",
+              whiteSpace: "nowrap"
             }}
           >
             {asking ? "Thinking…" : "Ask DevGPT"}
           </button>
         </form>
-        {questionError && (
-          <p style={{ color: "#ff6666", marginTop: "0.5rem" }}>{questionError}</p>
-        )}
       </section>
-
-      {/* Two-Column Layout: Left = Code Window; Right = Sidebar */}
-      <section style={{ display: "flex", gap: "1rem" }}>
-        {/* Left: "Code Editor" Window (answer shown here) */}
-        <div style={codeWindowStyle}>
+      {questionError && (
+        <div style={{ display: "flex", justifyContent: "center" }}>
+          <p style={{ color: "#ff6666", marginTop: "-1rem", marginBottom: "1rem", width: "80%", maxWidth: 1200 }}>{questionError}</p>
+        </div>
+      )}
+      {/* Single Response Box (code editor style), centered and even wider */}
+      <section style={{ display: "flex", justifyContent: "center", width: "100%" }}>
+        <div style={{ ...codeWindowStyle, width: "80%", minWidth: 500, maxWidth: 1200 }}>
           {answer
             ? answer
             : "// The answer from DevGPT will appear here in code-editor style\n"}
-        </div>
-
-        {/* Right: Sidebar (plain text) */}
-        <div style={sidebarStyle}>
-          <h3>Response</h3>
-          {answer ? (
-            <p>{answer}</p>
-          ) : (
-            <p style={{ fontStyle: "italic", color: darkMode ? "#aaa" : "#666" }}>
-              The DevGPT response will appear here.
-            </p>
-          )}
         </div>
       </section>
     </div>
