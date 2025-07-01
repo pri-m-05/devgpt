@@ -56,9 +56,11 @@ Examples of useful queries:
 
 ```plaintext
 devgpt/
-├── backend/       # Flask API, LangChain logic, vector database
-├── frontend/      # React interface (chat window, file explorer)
-├── embeddings/    # Generated FAISS vector indexes
-├── docs/          # Assets for demo and documentation
-├── embeddings/     # Generated FAISS vector indexes
-├── docs/           # Assets for demo/docs
+├── Lib/                 # Virtual environment site-packages (ignore in repo)
+├── Scripts/             # Virtual environment scripts (ignore in repo)
+├── core/                # Backend logic: embedding, file parsing, LangChain
+├── frontend/            # React interface (chat window, file viewer, etc.)
+├── vectorstore/         # FAISS index files and vector storage
+├── .gitignore           # Files and folders to be excluded from version control
+├── package-lock.json    # Frontend dependency lockfile
+├── requirements.txt     # Python dependencies
