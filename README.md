@@ -1,34 +1,64 @@
-DevGPT — Your AI Codebase Navigator 🧠
-DevGPT is a full-stack AI assistant built to help developers understand, navigate, and reason about large codebases with ease. It embeds your project into a semantic vector space and lets you ask natural language questions like “How does authentication work?” or “Where is this function used?” — returning grounded, context-aware answers based on the actual source code.
+<h1 align="center">DevGPT — Your AI Codebase Navigator 🧠</h1>
+**DevGPT** is a full-stack AI assistant built to help developers understand, navigate, and reason about large codebases with ease. It embeds your project into a semantic vector space and lets you ask natural language questions like:
 
-🛠 Built With
-React + Tailwind + shadcn/ui (Frontend)
+>
+> “How does authentication work?”  
+> “Where is this function used?”  
+> “What happens when the user logs in?”
+>
 
-Flask + LangChain + FAISS (Backend)
+It then returns grounded, context-aware answers based on the actual source code.
 
-OpenAI Embeddings (for semantic search)
+---
 
-✨ Key Features
-🔍 Semantic Search Over Code
-Navigate unfamiliar repos with questions like “What does this file do?” or “Where is the main loop?”
+## Overview
 
-💬 Chat with Your Codebase
-A familiar conversational UI lets you talk to your code as if it were another dev on your team.
+DevGPT is designed for:
 
-⚡ Lightning-Fast Embedding & Indexing
-Code is parsed and embedded locally using OpenAI + FAISS, enabling rapid, intelligent retrieval.
+- Rapid onboarding into unfamiliar repositories  
+- Faster comprehension of large or legacy codebases  
+- Debugging and tracing logic without context switching  
+- Improving developer productivity by reducing manual searching
 
-📁 Multi-File + Directory-Level Summaries
-Understand file relationships and structure without having to read each one line-by-line.
+---
 
-🧪 Example Prompts
-"Summarize the auth directory."
-"What happens when the user clicks login?"
-"Trace the logic from this route to the database layer."
+## Built With
 
-📂 Project Structure
+**Frontend:** React, TailwindCSS, shadcn/ui  
+**Backend:** Flask, LangChain, FAISS  
+**Embeddings:** OpenAI Embeddings (for semantic understanding)
+
+---
+
+## Key Features
+
+### Semantic Search Over Code  
+Ask high-level or low-level questions about your codebase using natural language. DevGPT retrieves relevant context from across the repository, not just by keywords.
+
+### Conversational UI  
+Interact with your codebase through a clean, familiar chat interface — ask questions, request summaries, or trace logic flows across files.
+
+### Fast Local Embedding and Indexing  
+Embeds and indexes your code locally using FAISS and OpenAI for fast and accurate retrieval.
+
+### Multi-File and Directory-Level Summaries  
+Understand how different components connect by summarizing entire directories or groups of files.
+
+### Prompt-Based Exploration  
+Examples of useful queries:
+- "Summarize the auth directory."
+- "What happens when the user clicks login?"
+- "Trace the logic from this route to the database layer."
+
+---
+
+## Project Structure
+
+```plaintext
 devgpt/
-├── backend/        # Flask API, LangChain logic, vector database
-├── frontend/       # React interface (chat window, file explorer)
+├── backend/       # Flask API, LangChain logic, vector database
+├── frontend/      # React interface (chat window, file explorer)
+├── embeddings/    # Generated FAISS vector indexes
+├── docs/          # Assets for demo and documentation
 ├── embeddings/     # Generated FAISS vector indexes
 ├── docs/           # Assets for demo/docs
