@@ -1,13 +1,6 @@
 # DevGPT
-**DevGPT** is a full-stack AI assistant built to help developers understand, navigate, and reason about large codebases with ease. It embeds your project into a semantic vector space and lets you ask natural language questions like:
 
->
-> “How does authentication work?”  
-> “Where is this function used?”  
-> “What happens when the user logs in?”
->
-
-It then returns grounded, context-aware answers based on the actual source code.
+DevGPT is a full-stack AI assistant that helps developers understand and navigate large codebases through semantic search and natural language questions. Built with React, Flask, FAISS, and OpenAI embeddings.
 
 ---
 
