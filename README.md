@@ -1,4 +1,4 @@
-#<h1 align="center">DevGPT — Your AI Codebase Navigator 🧠</h1>
+# DevGPT
 **DevGPT** is a full-stack AI assistant built to help developers understand, navigate, and reason about large codebases with ease. It embeds your project into a semantic vector space and lets you ask natural language questions like:
 
 >
